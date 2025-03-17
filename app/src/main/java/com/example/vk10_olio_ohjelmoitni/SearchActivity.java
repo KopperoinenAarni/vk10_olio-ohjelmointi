@@ -182,8 +182,11 @@ public class SearchActivity extends AppCompatActivity {
             CarDataStorage.getInstance().setCity(city);
             CarDataStorage.getInstance().setYear(year);
 
+            SearchActivity.this.runOnUiThread(() -> statusText.setText("Haku onnistui"));
+
         } catch (Exception e) {
             e.printStackTrace();
+            SearchActivity.this.runOnUiThread(() -> statusText.setText("Haku epäonnistui: " + e.getMessage()));
         }
     }
 }
