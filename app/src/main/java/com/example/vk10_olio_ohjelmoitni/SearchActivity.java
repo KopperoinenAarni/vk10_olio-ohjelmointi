@@ -184,9 +184,10 @@ public class SearchActivity extends AppCompatActivity {
 
             SearchActivity.this.runOnUiThread(() -> statusText.setText("Haku onnistui"));
 
+
         } catch (Exception e) {
             e.printStackTrace();
-            SearchActivity.this.runOnUiThread(() -> statusText.setText("Haku epäonnistui: " + e.getMessage()));
+            statusText.post(() -> statusText.setText("Haku epäonnistui: " + e.getMessage()));
         }
     }
 }
