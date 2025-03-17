@@ -17,7 +17,7 @@ public class CarDataStorage {
         return instance;
     }
 
-    public ArrayList<CarData> getCarDataList() {
+    public ArrayList<CarData> getCarData() {
         return carData;
     }
 

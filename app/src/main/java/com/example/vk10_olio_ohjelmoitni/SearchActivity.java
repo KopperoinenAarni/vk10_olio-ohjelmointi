@@ -143,6 +143,9 @@ public class SearchActivity extends AppCompatActivity {
             responseNode.put("format", "json-stat2");
             root.set("response", responseNode);
 
+            root.put("tableIdForQuery", "statfin_mkan_pxt_11ic.px");
+
+
             byte[] input = objectMapper.writeValueAsBytes(root);
             OutputStream os = con.getOutputStream();
             os.write(input, 0, input.length);

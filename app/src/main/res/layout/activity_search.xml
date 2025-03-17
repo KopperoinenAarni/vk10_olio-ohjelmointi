@@ -38,7 +38,7 @@
         tools:layout_editor_absoluteY="54dp" />
 
     <Button
-        android:id="@+id/ListInfoActivity"
+        android:id="@+id/ListInfoActivityButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="248dp"
@@ -62,9 +62,9 @@
         android:layout_marginTop="30dp"
         android:onClick="switchToMain"
         android:text="Palaa päävalikkoon"
-        app:layout_constraintEnd_toEndOf="@+id/ListInfoActivity"
-        app:layout_constraintStart_toStartOf="@+id/ListInfoActivity"
-        app:layout_constraintTop_toBottomOf="@+id/ListInfoActivity" />
+        app:layout_constraintEnd_toEndOf="@+id/ListInfoActivityButton"
+        app:layout_constraintStart_toStartOf="@+id/ListInfoActivityButton"
+        app:layout_constraintTop_toBottomOf="@+id/ListInfoActivityButton" />
 
     <TextView
         android:id="@+id/StatusText"

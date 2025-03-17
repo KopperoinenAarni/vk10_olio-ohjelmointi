@@ -33,7 +33,7 @@ public class ListInfoActivity extends AppCompatActivity {
 
         StringBuilder infoBuilder = new StringBuilder();
         int total = 0;
-        for (CarData car : storage.getCarDataList()) {
+        for (CarData car : storage.getCarData()) {
             infoBuilder.append(car.getType())
                     .append(": ")
                     .append(car.getAmount())
