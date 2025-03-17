@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SearchActivity">
+
+    <Button
+        android:id="@+id/SearchButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp"
+        android:onClick="searchButton"
+        android:text="Hae tiedot"
+        app:layout_constraintEnd_toEndOf="@+id/YearEdit"
+        app:layout_constraintStart_toStartOf="@+id/YearEdit"
+        app:layout_constraintTop_toBottomOf="@+id/YearEdit" />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/YearEdit"
+        android:layout_width="237dp"
+        android:layout_height="49dp"
+        android:layout_marginTop="36dp"
+        android:hint="2011-2024"
+        app:layout_constraintEnd_toEndOf="@+id/CityNameEdit"
+        app:layout_constraintStart_toStartOf="@+id/CityNameEdit"
+        app:layout_constraintTop_toBottomOf="@+id/CityNameEdit" />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/CityNameEdit"
+        android:layout_width="236dp"
+        android:layout_height="39dp"
+        android:hint="Kaupungin nimi"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteY="54dp" />
+
+    <Button
+        android:id="@+id/ListInfoActivity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="248dp"
+        android:onClick="switchToList"
+        android:shadowColor="#000000"
+        android:text="Siirry tietoihin"
+        android:textColor="#000000"
+        android:textColorHint="#CA2222"
+        android:textColorLink="#D73636"
+        app:layout_constraintEnd_toEndOf="@+id/SearchButton"
+        app:layout_constraintHorizontal_bias="0.545"
+        app:layout_constraintStart_toStartOf="@+id/SearchButton"
+        app:layout_constraintTop_toBottomOf="@+id/SearchButton"
+        app:rippleColor="#CA6363"
+        app:strokeColor="#C84D4D" />
+
+    <Button
+        android:id="@+id/MainActivityButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:onClick="switchToMain"
+        android:text="Palaa päävalikkoon"
+        app:layout_constraintEnd_toEndOf="@+id/ListInfoActivity"
+        app:layout_constraintStart_toStartOf="@+id/ListInfoActivity"
+        app:layout_constraintTop_toBottomOf="@+id/ListInfoActivity" />
+
+    <TextView
+        android:id="@+id/StatusText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="status"
+        app:layout_constraintEnd_toEndOf="@+id/SearchButton"
+        app:layout_constraintStart_toStartOf="@+id/SearchButton"
+        app:layout_constraintTop_toBottomOf="@+id/SearchButton" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
