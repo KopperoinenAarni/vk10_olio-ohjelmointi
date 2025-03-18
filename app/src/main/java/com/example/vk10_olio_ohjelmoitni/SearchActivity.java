@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Iterator;
 
 public class SearchActivity extends AppCompatActivity {
@@ -63,8 +64,8 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     public void searchButton(View view) {
-        String city = cityEdit.getText().toString();
-        String yearText = yearEdit.getText().toString();
+        String city = cityEdit.getText().toString().trim();
+        String yearText = yearEdit.getText().toString().trim();
 
         if (city.isEmpty() || yearText.isEmpty()) {
             statusText.setText("Molemmat kentät on täytettävä.");
@@ -79,13 +80,36 @@ public class SearchActivity extends AppCompatActivity {
             return;
         }
 
-        statusText.setText("Tietoa ollaan hakemassa parhaillaan!");
-        CarDataStorage.getInstance().clearData();
+        statusText.setText("Haetaan aluetta...");
 
         new Thread(() -> {
-            getData(SearchActivity.this, city, year);
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode areasRoot = mapper.readTree(new URL("https://pxdata.stat.fi:443/PxWeb/api/v1/fi/StatFin/mkan/statfin_mkan_pxt_11ic.px"));
+
+                HashMap<String, String> areaCodesMap = new HashMap<>();
+                JsonNode areaNames = areasRoot.get("variables").get(0).get("valueTexts");
+                JsonNode areaCodes = areasRoot.get("variables").get(0).get("values");
+
+                for (int i = 0; i < areaNames.size(); i++) {
+                    areaCodesMap.put(areaNames.get(i).asText(), areaCodes.get(i).asText());
+                }
+
+                if (!areaCodesMap.containsKey(city)) {
+                    runOnUiThread(() -> statusText.setText("Kaupunkia ei löytynyt. Tarkista nimi!"));
+                    return;
+                }
+
+                runOnUiThread(() -> statusText.setText("Kaupunki löytyi. Haetaan tietoja..."));
+
+                getData(SearchActivity.this, city, year);
+
+            } catch (Exception e) {
+                runOnUiThread(() -> statusText.setText("Virhe aluekoodien haussa: " + e.getMessage()));
+            }
         }).start();
     }
+
 
 
     public void getData(Context context, String city, int year) {
