@@ -113,13 +113,33 @@ public class SearchActivity extends AppCompatActivity {
 
 
     public void getData(Context context, String city, int year) {
-        CarDataStorage.getInstance().clearData();
+        CarDataStorage storage = CarDataStorage.getInstance();
+        storage.clearData();
 
         ObjectMapper objectMapper = new ObjectMapper();
 
         try {
             URL url = new URL("https://pxdata.stat.fi:443/PxWeb/api/v1/fi/StatFin/mkan/statfin_mkan_pxt_11ic.px");
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            JsonNode areasRoot = objectMapper.readTree(url);
+
+            HashMap<String, String> areaCodesMap = new HashMap<>();
+            JsonNode areaNames = areasRoot.get("variables").get(0).get("valueTexts");
+            JsonNode areaCodesNode = areasRoot.get("variables").get(0).get("values");
+
+            for (int i = 0; i < areaNames.size(); i++) {
+                areaCodesMap.put(areaNames.get(i).asText(), areaCodesNode.get(i).asText());
+            }
+
+            if (!areaCodesMap.containsKey(city)) {
+                runOnUiThread(() -> statusText.setText("Kaupunkia ei löytynyt!"));
+                return;
+            }
+
+            String areaCode = areaCodesMap.get(city);
+
+
+            URL postUrl = new URL("https://pxdata.stat.fi:443/PxWeb/api/v1/fi/StatFin/mkan/statfin_mkan_pxt_11ic.px");
+            HttpURLConnection con = (HttpURLConnection) postUrl.openConnection();
             con.setRequestMethod("POST");
             con.setRequestProperty("Content-Type", "application/json; utf-8");
             con.setRequestProperty("Accept", "application/json");
@@ -128,47 +148,52 @@ public class SearchActivity extends AppCompatActivity {
             ObjectNode root = objectMapper.createObjectNode();
             ArrayNode queryArray = objectMapper.createArrayNode();
 
+            ObjectNode alueQuery = objectMapper.createObjectNode();
+            alueQuery.put("code", "Alue");
+            ObjectNode selectionAlue = objectMapper.createObjectNode();
+            selectionAlue.put("filter", "item");
+            ArrayNode alueValues = objectMapper.createArrayNode();
+            alueValues.add(areaCodesMap.get(city));
+            selectionAlue.set("values", alueValues);
+            alueQuery.set("selection", selectionAlue);
+
+            // Ajoneuvoluokka
             ObjectNode ajoneuvoQuery = objectMapper.createObjectNode();
             ajoneuvoQuery.put("code", "Ajoneuvoluokka");
-            ObjectNode ajoneuvoSelection = objectMapper.createObjectNode();
-            ajoneuvoSelection.put("filter", "item");
+            ObjectNode selectionAjoneuvo = objectMapper.createObjectNode();
+            selectionAjoneuvo.put("filter", "item");
             ArrayNode ajoneuvoValues = objectMapper.createArrayNode();
-            ajoneuvoValues.add("01");
-            ajoneuvoValues.add("02");
-            ajoneuvoValues.add("03");
-            ajoneuvoValues.add("04");
-            ajoneuvoValues.add("05");
-            ajoneuvoSelection.set("values", ajoneuvoValues);
-            ajoneuvoQuery.set("selection", ajoneuvoSelection);
-            queryArray.add(ajoneuvoQuery);
+            ajoneuvoValues.add("01").add("02").add("03").add("04").add("05");
+            selectionAjoneuvo.set("values", ajoneuvoValues);
+            ajoneuvoQuery.set("selection", selectionAjoneuvo);
 
-            ObjectNode liikenneQuery = objectMapper.createObjectNode();
-            liikenneQuery.put("code", "Liikennekäyttö");
-            ObjectNode liikenneSelection = objectMapper.createObjectNode();
-            liikenneSelection.put("filter", "item");
+            // Liikennekäyttö
+            ObjectNode liikennekayttoQuery = objectMapper.createObjectNode();
+            liikennekayttoQuery.put("code", "Liikennekäyttö");
+            ObjectNode selectionLiikenne = objectMapper.createObjectNode();
+            selectionLiikenne.put("filter", "item");
             ArrayNode liikenneValues = objectMapper.createArrayNode();
             liikenneValues.add("0");
-            liikenneSelection.set("values", liikenneValues);
-            liikenneQuery.set("selection", liikenneSelection);
-            queryArray.add(liikenneQuery);
+            selectionLiikenne.set("values", liikenneValues);
+            liikennekayttoQuery.set("selection", selectionLiikenne);
 
             ObjectNode vuosiQuery = objectMapper.createObjectNode();
             vuosiQuery.put("code", "Vuosi");
-            ObjectNode vuosiSelection = objectMapper.createObjectNode();
-            vuosiSelection.put("filter", "item");
+            ObjectNode selectionVuosi = objectMapper.createObjectNode();
+            selectionVuosi.put("filter", "item");
             ArrayNode vuosiValues = objectMapper.createArrayNode();
             vuosiValues.add(String.valueOf(year));
-            vuosiSelection.set("values", vuosiValues);
-            vuosiQuery.set("selection", vuosiSelection);
+            selectionVuosi.set("values", vuosiValues);
+            vuosiQuery.set("selection", selectionVuosi);
+
+            queryArray.add(alueQuery);
+            queryArray.add(ajoneuvoQuery);
+            queryArray.add(liikennekayttoQuery);
             queryArray.add(vuosiQuery);
 
+            root = objectMapper.createObjectNode();
             root.set("query", queryArray);
-            ObjectNode responseNode = objectMapper.createObjectNode();
-            responseNode.put("format", "json-stat2");
-            root.set("response", responseNode);
-
-            root.put("tableIdForQuery", "statfin_mkan_pxt_11ic.px");
-
+            root.putObject("response").put("format", "json-stat2");
 
             byte[] input = objectMapper.writeValueAsBytes(root);
             OutputStream os = con.getOutputStream();
@@ -182,36 +207,31 @@ public class SearchActivity extends AppCompatActivity {
             while ((line = br.readLine()) != null) {
                 responseBuilder.append(line.trim());
             }
-            br.close();
-            con.disconnect();
 
-            JsonNode responseJson = objectMapper.readTree(responseBuilder.toString());
-            ArrayNode values = (ArrayNode) responseJson.get("value");
-            JsonNode dimension = responseJson.get("dimension");
-            JsonNode ajoneuvoDim = dimension.get("Ajoneuvoluokka");
-            JsonNode category = ajoneuvoDim.get("category");
+            JsonNode jsonResponse = objectMapper.readTree(responseBuilder.toString());
+            ArrayNode values = (ArrayNode) jsonResponse.get("value");
+            JsonNode labels = jsonResponse.get("dimension").get("Ajoneuvoluokka").get("category").get("label");
+            JsonNode indices = jsonResponse.get("dimension").get("Ajoneuvoluokka").get("category").get("index");
 
-            JsonNode indexNode = category.get("index");
-            JsonNode labelNode = category.get("label");
-
-            Iterator<String> fieldNames = indexNode.fieldNames();
+            Iterator<String> fieldNames = indices.fieldNames();
             while (fieldNames.hasNext()) {
-                String code = fieldNames.next();
-                int pos = indexNode.get(code).asInt();
-                String carType = labelNode.get(code).asText();
-                int amount = values.get(pos).asInt();
-                CarDataStorage.getInstance().addCarData(new CarData(carType, amount));
+                String key = fieldNames.next();
+                int index = indices.get(key).asInt();
+                String carType = labels.get(key).asText();
+                int amount = values.get(index).asInt();
+                storage.addCarData(new CarData(carType, amount));
             }
 
-            CarDataStorage.getInstance().setCity(city);
-            CarDataStorage.getInstance().setYear(year);
+            storage.setCity(city);
+            storage.setYear(year);
 
-            SearchActivity.this.runOnUiThread(() -> statusText.setText("Haku onnistui"));
-
+            runOnUiThread(() -> statusText.setText("Haku onnistui!"));
 
         } catch (Exception e) {
             e.printStackTrace();
-            statusText.post(() -> statusText.setText("Haku epäonnistui: " + e.getMessage()));
+            runOnUiThread(() -> statusText.setText("Haku epäonnistui: " + e.getMessage()));
         }
     }
+
+
 }
