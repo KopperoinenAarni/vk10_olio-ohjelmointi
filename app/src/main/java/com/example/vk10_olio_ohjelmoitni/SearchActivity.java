@@ -68,7 +68,7 @@ public class SearchActivity extends AppCompatActivity {
         String yearText = yearEdit.getText().toString().trim();
 
         if (city.isEmpty() || yearText.isEmpty()) {
-            statusText.setText("Molemmat kentät on täytettävä.");
+            statusText.setText("Haku epäonnistui.");
             return;
         }
 
@@ -76,7 +76,7 @@ public class SearchActivity extends AppCompatActivity {
         try {
             year = Integer.parseInt(yearText);
         } catch (NumberFormatException e) {
-            statusText.setText("Vuoden pitää olla numero!");
+            statusText.setText("Haku epäonnistui.");
             return;
         }
 
@@ -96,16 +96,16 @@ public class SearchActivity extends AppCompatActivity {
                 }
 
                 if (!areaCodesMap.containsKey(city)) {
-                    runOnUiThread(() -> statusText.setText("Kaupunkia ei löytynyt. Tarkista nimi!"));
+                    runOnUiThread(() -> statusText.setText("Haku epäonnistui."));
                     return;
                 }
 
-                runOnUiThread(() -> statusText.setText("Kaupunki löytyi. Haetaan tietoja..."));
+                runOnUiThread(() -> statusText.setText("Haku epäonnistui."));
 
                 getData(SearchActivity.this, city, year);
 
             } catch (Exception e) {
-                runOnUiThread(() -> statusText.setText("Virhe aluekoodien haussa: " + e.getMessage()));
+                runOnUiThread(() -> statusText.setText("Haku epäonnistui.: " + e.getMessage()));
             }
         }).start();
     }
